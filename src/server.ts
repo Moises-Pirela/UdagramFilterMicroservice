@@ -2,7 +2,6 @@ import express from 'express';
 import bodyParser from 'body-parser';
 import {filterImageFromURL, deleteLocalFiles} from './util/util';
 import { url } from 'inspector';
-import { FilterRouter } from './api/routes/filter.router';
 
 (async () => {
 
@@ -35,18 +34,24 @@ import { FilterRouter } from './api/routes/filter.router';
   
   // Root Endpoint
   // Displays a simple message to the user
+
+  //app.use('api/routes', IndexRouter);
+
   app.get( "/", async ( req, res ) => {
     res.send("try GET /filteredimage?image_url={{}}")
   } );
 
-  app.use('api/routes', FilterRouter);
-
-  app.get("/filteredimage?image_url={{}}", async (req, res) => {
-    let { image_url } = req.params;
-    const filteredImage = await filterImageFromURL(image_url);
-    res.sendfile(filteredImage);
+  //Filtered image endpoint
+  //Note: queries are not inserted in path
+  app.get("/filteredimage" , async (req, res) =>{
+    let  image_url = req.query;
+    
+    filterImageFromURL(image_url).then(photo => {  //@TODO FIX IMAGE FILTER EXCEPTION
+      res.sendFile(photo);
+    }).catch(err => {
+      res.send(err);
+    });
   });
-  
 
   // Start the Server
   app.listen( port, () => {
