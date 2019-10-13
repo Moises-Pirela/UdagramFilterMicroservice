@@ -2,7 +2,6 @@ import express from 'express';
 import bodyParser from 'body-parser';
 import {filterImageFromURL, deleteLocalFiles} from './util/util';
 import { url } from 'inspector';
-import { FilterRouter } from './api/routes/filter.router';
 
 (async () => {
 
@@ -35,18 +34,28 @@ import { FilterRouter } from './api/routes/filter.router';
   
   // Root Endpoint
   // Displays a simple message to the user
+
+  //app.use('api/routes', IndexRouter);
+
   app.get( "/", async ( req, res ) => {
     res.send("try GET /filteredimage?image_url={{}}")
   } );
 
-  app.use('api/routes', FilterRouter);
-
-  app.get("/filteredimage?image_url={{}}", async (req, res) => {
-    let { image_url } = req.params;
-    const filteredImage = await filterImageFromURL(image_url);
-    res.sendfile(filteredImage);
+  app.get("/filteredimage", async ( req, res ) => {
+    let {image_url} = req.query;
+    if(!image_url){
+          return res.status(402).send("NO URL WAS PASSED");
+        }
+        try{
+     await(filterImageFromURL(image_url)).then(function(data){
+       res.status(200).sendFile(data, () => deleteLocalFiles([data]));
+     })
+     
+    }
+    catch (err){
+      res.status(400).send(err);
+    }
   });
-  
 
   // Start the Server
   app.listen( port, () => {
