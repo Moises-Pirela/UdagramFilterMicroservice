@@ -41,16 +41,20 @@ import { url } from 'inspector';
     res.send("try GET /filteredimage?image_url={{}}")
   } );
 
-  //Filtered image endpoint
-  //Note: queries are not inserted in path
-  app.get("/filteredimage" , async (req, res) =>{
-    let  image_url = req.query;
-    
-    filterImageFromURL(image_url).then(photo => {  //@TODO FIX IMAGE FILTER EXCEPTION
-      res.sendFile(photo);
-    }).catch(err => {
-      res.send(err);
-    });
+  app.get("/filteredimage", async ( req, res ) => {
+    let {image_url} = req.query;
+    if(!image_url){
+          return res.status(402).send("NO URL WAS PASSED");
+        }
+        try{
+     await(filterImageFromURL(image_url)).then(function(data){
+       res.status(200).sendFile(data, () => deleteLocalFiles([data]));
+     })
+     
+    }
+    catch (err){
+      res.status(400).send(err);
+    }
   });
 
   // Start the Server
