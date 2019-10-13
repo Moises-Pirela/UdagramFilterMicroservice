@@ -53,7 +53,7 @@ import { url } from 'inspector';
      
     }
     catch (err){
-      res.status(400).send(err);
+      res.status(400).send("Something went wrong");
     }
   });
 
